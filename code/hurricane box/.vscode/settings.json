@@ -1,0 +1,9 @@
+{
+    "idf.adapterTargetName": "esp32",
+    "files.associations": {
+        "adxl343.h": "c",
+        "stdlib.h": "c",
+        "inttypes.h": "c",
+        "string.h": "c"
+    }
+}

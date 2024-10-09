@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hurricane Box Data</title>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .chartContainer { height: 300px; width: 100%; margin-bottom: 20px; }
+        #controlButton { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>Hurricane Box Data</h1>
+
+<div id="temperatureChart" class="chartContainer"></div>
+<div id="vibrationChart" class="chartContainer"></div>
+<div id="voltageChart" class="chartContainer"></div>
+
+<button id = "controlButton" onclick="changeFlag()">Click Me To Change LED</button>
+
+<script>
+    window.onload = function () {
+        const socket = io();
+
+        var temperatureData = [];
+        var rollData = [];
+        var pitchData = [];
+        var voltageData = [];
+
+        var temperatureChart = new CanvasJS.Chart("temperatureChart", {
+            animationEnabled: true,
+            theme: "light2",
+            title: { text: "Temperature Data" },
+            axisX: { title: "Seconds (s)" },
+            axisY: { title: "Temperature (°C)" },
+            data: [{ type: "line", dataPoints: temperatureData }]
+        });
+
+        var vibrationChart = new CanvasJS.Chart("vibrationChart", {
+            animationEnabled: true,
+            theme: "light2",
+            title: { text: "Vibration Data" },
+            axisX: { title: "Seconds (s)" },
+            axisY: { title: "Angle (degrees)" },
+            legend: { cursor: "pointer", verticalAlign: "top", horizontalAlign: "left", dockInsidePlotArea: true },
+            toolTip: { shared: true },
+            data: [
+                { type: "line", 
+                showInLegend: true, 
+                name: "Roll", 
+                dataPoints: rollData },
+                { type: "line", 
+                showInLegend: true, 
+                name: "Pitch", 
+                dataPoints: pitchData }
+            ]
+        });
+
+        var voltageChart = new CanvasJS.Chart("voltageChart", {
+            animationEnabled: true,
+            theme: "light2",
+            title: { text: "Voltage Data" },
+            axisX: { title: "Seconds (s)" },
+            axisY: { title: "Voltage (V)" },
+            data: [{ type: "line", dataPoints: voltageData }]
+        });
+
+        socket.on('data', function (data) {
+            temperatureData.push({ x: data.seconds, y: data.temp });
+            rollData.push({ x: data.seconds, y: data.roll });
+            pitchData.push({ x: data.seconds, y: data.pitch });
+            voltageData.push({ x: data.seconds, y: data.voltage });
+
+            temperatureChart.render();
+            vibrationChart.render();
+            voltageChart.render();
+        });
+
+        function changeFlag() {
+            socket.emit('toggleFlag');
+        }
+
+        // Bind the function to the button click event
+        document.getElementById('controlButton').addEventListener('click', changeFlag);
+    }
+    
+</script>
+</body>
+</html>
